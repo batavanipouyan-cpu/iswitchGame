@@ -890,9 +890,16 @@ body {
   .led-yellow {
     top: 9% !important;
   }
-   .modal-box { 
-  position: relative; 
-  z-index: 60; 
+  
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0);
+}
+
+  .modal-box { 
+  position: relative !important; 
+  z-index: 600 !important; 
   background: #0b1220; 
   padding: 18px; 
   border-radius: 12px; 
@@ -962,6 +969,14 @@ body {
     height: 18px;
     font-size: 9px;
   }
+  .protector-area {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .protector-display {
+    font-size: 24px;
+  }
   
   .map-small {
         width: 250px;
@@ -981,7 +996,7 @@ body {
     top: 10%;
   }
 
-}
+
 @media (max-width: 576px) {
   .panel-wrap {
     transform: scale(0.4);
