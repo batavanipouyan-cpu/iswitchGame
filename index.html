@@ -405,62 +405,37 @@ body {
 }
 
 /* مودال محافظ */
-/* دیباگ CSS برای modal */
 .modal { 
-  position: fixed !important; 
-  inset: 0 !important; 
-  display: none !important; 
-  align-items: center !important; 
-  justify-content: center !important; 
-  z-index: 9999 !important; /* مقدار خیلی بالا */
-  background-color: rgba(0,0,0,0.1) !important; /* برای دیباگ */
+  position: fixed; 
+  inset: 0; 
+  display: none; 
+  align-items: center; 
+  justify-content: center; 
+  z-index: 50; 
 }
-
 .modal.open { 
-  display: flex !important; 
-  background-color: rgba(0,0,0,0.5) !important; /* بک‌دراپ قابل مشاهده */
+  display: flex; 
 }
-
 .modal-backdrop { 
-  position: absolute !important; 
-  inset: 0 !important; 
-  background: rgba(0,0,0,0.5) !important; 
-  z-index: 9998 !important;
-}
+  position: absolute; 
+  inset: 0; 
+  background: rgba(0,0,0,0);
 
+}
 .modal-box { 
-  position: relative !important; 
-  z-index: 10000 !important; /* بالاتر از بک‌دراپ */
-  background: #0b1220 !important; 
-  padding: 18px !important; 
-  border-radius: 12px !important; 
-  min-width: 260px !important; 
-  color: #fff !important; 
-  box-shadow: 0 18px 50px rgba(0,0,0,0.6) !important; 
-  transform: scale(.8) !important; 
-  transition: transform .28s ease !important; 
-  border: 2px solid red !important; /* برای دیباگ */
+  position: relative; 
+  z-index: 60; 
+  background: #0b1220; 
+  padding: 18px; 
+  border-radius: 12px; 
+  min-width: 260px; 
+  color: #fff; 
+  box-shadow: 0 18px 50px rgba(0,0,0,0.6); 
+  transform: scale(.8); 
+  transition: transform .28s ease; 
 }
-
 .modal.open .modal-box { 
-  transform: scale(1) !important; 
-  border: 2px solid green !important; /* برای دیباگ */
-}
-
-/* دیباگ protectorArea */
-.protector-area {
-  border: 2px solid yellow !important; /* برای دیباگ */
-  background-color: rgba(255,255,0,0.2) !important;
-}
-
-/* وقتی موس روشه */
-.protector-area:hover {
-  background-color: rgba(255,255,0,0.4) !important;
-}
-
-/* وقتی کلیک میشه */
-.protector-area:active {
-  background-color: rgba(255,255,0,0.6) !important;
+  transform: scale(1); 
 }
 
 /* protector UI */
@@ -1423,76 +1398,111 @@ function startGameTimer() {
   }
 
     /* protector modal open/close */
-   function openProtectorModal() {
-  console.log('openProtectorModal called'); // دیباگ
-  protectorModal.classList.add('open');
-  protectorModal.setAttribute('aria-hidden','false');
-  protectorModal.style.display = 'flex'; // اضافه کردن این خط
-  state.protectorActive = true;
-  protectorValueEl.textContent = 'S' + state.protectorValue;
-  playSound(assets.click, 0.25);
-  
-  // دیباگ: چک کن modal باز شده
-  console.log('Modal classes:', protectorModal.className);
-  console.log('Modal display style:', protectorModal.style.display);
-}
+    function openProtectorModal() {
+      protectorModal.classList.add('open');
+      protectorModal.setAttribute('aria-hidden','false');
+      state.protectorActive = true;
+      protectorValueEl.textContent = 'S' + state.protectorValue;
+      playSound(assets.click, 0.25);
+    }
+    
+    function closeProtectorModal() {
+      protectorModal.classList.remove('open');
+      protectorModal.setAttribute('aria-hidden','true');
+      state.protectorActive = false;
+      // آپدیت نمایش روی پنل بعد از بستن مودال
+      updateProtectorDisplayOnPanel();
+    }
 
-function closeProtectorModal() {
-  console.log('closeProtectorModal called'); // دیباگ
-  protectorModal.classList.remove('open');
-  protectorModal.setAttribute('aria-hidden','true');
-  protectorModal.style.display = 'none'; // اضافه کردن این خط
-  state.protectorActive = false;
-  updateProtectorDisplayOnPanel();
-}
+    /* متغیرهای اینتروال برای نگه داشتن دکمه */
+    let protUpInterval, protDownInterval;
 
-/* protectorArea click */
-protectorArea.addEventListener('click', function(e) {
-  console.log('protectorArea clicked'); // دیباگ
-  e.preventDefault();
-  e.stopPropagation();
-  openProtectorModal();
-});
+    /* نگه داشتن برای افزایش سریع */
+    protUp.addEventListener('mousedown', startIncrement);
+    protUp.addEventListener('touchstart', startIncrement);
+    protUp.addEventListener('mouseup', stopIncrement);
+    protUp.addEventListener('touchend', stopIncrement);
+    protUp.addEventListener('mouseleave', stopIncrement);
 
-/* برای موبایل - touch events */
-protectorArea.addEventListener('touchend', function(e) {
-  console.log('protectorArea touched'); // دیباگ
-  e.preventDefault();
-  e.stopPropagation();
-  openProtectorModal();
-}, { passive: false });
+    /* نگه داشتن برای کاهش سریع */
+    protDown.addEventListener('mousedown', startDecrement);
+    protDown.addEventListener('touchstart', startDecrement);
+    protDown.addEventListener('mouseup', stopIncrement);
+    protDown.addEventListener('touchend', stopIncrement);
+    protDown.addEventListener('mouseleave', stopIncrement);
 
-/* close modal */
-protClose.addEventListener('click', function(e) {
-  console.log('protClose clicked'); // دیباگ
-  e.preventDefault();
-  e.stopPropagation();
-  closeProtectorModal();
-});
+    /* شروع افزایش با نگه داشتن */
+    function startIncrement() {
+      playSound(assets.click, 0.2);
+      incrementProtector();
+      protUpInterval = setInterval(incrementProtector, 30);
+    }
 
-modalBackdrop.addEventListener('click', function(e) {
-  console.log('modalBackdrop clicked'); // دیباگ
-  e.preventDefault();
-  e.stopPropagation();
-  closeProtectorModal();
-});
+    /* شروع کاهش با نگه داشتن */
+    function startDecrement() {
+      playSound(assets.click, 0.2);
+      decrementProtector();
+      protDownInterval = setInterval(decrementProtector, 30);
+    }
 
-/* دیباگ: چک کن آیا elementها پیدا شدن */
-console.log('protectorArea found:', !!protectorArea);
-console.log('protectorModal found:', !!protectorModal);
-console.log('protectorValueEl found:', !!protectorValueEl);
+    /* توقف اینتروال */
+    function stopIncrement() {
+      clearInterval(protUpInterval);
+      clearInterval(protDownInterval);
+    }
 
-/* تست: باز کردن modal با کلید کیبورد برای تست */
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'p' || e.key === 'P') {
-    console.log('Test: Opening protector modal with keyboard');
-    openProtectorModal();
-  }
-  if (e.key === 'Escape' && state.protectorActive) {
-    console.log('Test: Closing protector modal with Escape');
-    closeProtectorModal();
-  }
-});
+    /* افزایش مقدار محافظ */
+    function incrementProtector() {
+      state.protectorValue++;
+      if(state.protectorValue > 500) state.protectorValue = 1;
+      updateProtectorModalDisplay();
+    }
+
+    /* کاهش مقدار محافظ */
+    function decrementProtector() {
+      state.protectorValue = Math.max(1, state.protectorValue - 1);
+      updateProtectorModalDisplay();
+    }
+
+    /* آپدیت نمایش مقدار در مودال */
+    function updateProtectorModalDisplay() {
+      protectorValueEl.textContent = 'S' + state.protectorValue;
+      protectorValueEl.classList.add('changing');
+      setTimeout(() => {
+        protectorValueEl.classList.remove('changing');
+      }, 100);
+    }
+
+    /* کلیک معمولی هم کار کنه */
+    protUp.addEventListener('click', incrementProtector);
+    protDown.addEventListener('click', decrementProtector);
+
+    /* SET behavior - تنظیم روی 1 ثانیه */
+    protSet.addEventListener('click', () => {
+      playSound(assets.click, 0.3);
+      if(state.protectorValue === 1 && state.stage === 2 && state.signals.LED4 === 'on') {
+        // موفقیت‌آمیز - محافظ روی 1 ثانیه تنظیم شد
+        setTimeout(() => {
+          setLED('LED4', false);
+          setLED('LED3', true);
+          state.stage = 3;
+          setStageDone(3);
+          closeProtectorModal();
+        }, 1000);
+      } else {
+        closeProtectorModal();
+      }
+    });
+
+    /* close modal */
+    protClose.addEventListener('click', closeProtectorModal);
+    modalBackdrop.addEventListener('click', closeProtectorModal);
+    mapBackdrop && mapBackdrop.addEventListener('click', () => mapModal.classList.remove('open'));
+
+    /* protectorArea click */
+    protectorArea.addEventListener('click', () => {
+      openProtectorModal();
+    });
 
     /* map click toggle */
     mapSmall.addEventListener('click', () => {
