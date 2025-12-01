@@ -1382,7 +1382,6 @@ function startGameTimer() {
   protectorModal.setAttribute('aria-hidden','false');
   state.protectorActive = true;
   protectorValueEl.textContent = 'S' + state.protectorValue;
-  playSound(assets.click, 0.25);
 }
 
 function closeProtectorModal() {
@@ -1392,143 +1391,33 @@ function closeProtectorModal() {
   updateProtectorDisplayOnPanel();
 }
 
-/* متغیرهای اینتروال برای نگه داشتن دکمه */
-let protUpInterval, protDownInterval;
-let isMouseDown = false;
-let clickHandled = false;
-
-/* Event Listeners برای دکمه افزایش */
-protUp.addEventListener('mousedown', function(e) {
+/* فقط با کلیک کار کنه - ساده‌ترین حالت */
+protUp.addEventListener('click', function(e) {
   e.preventDefault();
-  isMouseDown = true;
-  clickHandled = false;
-  startIncrement();
-});
-
-protUp.addEventListener('mouseup', function(e) {
-  e.preventDefault();
-  isMouseDown = false;
-  if (!clickHandled) {
-    // اگر فقط کلیک کرده و نگه نداشته
-    playSound(assets.click, 0.15);
-    incrementProtector();
-  }
-  stopIncrement();
-});
-
-protUp.addEventListener('mouseleave', function() {
-  if (isMouseDown) {
-    stopIncrement();
-    isMouseDown = false;
-  }
-});
-
-/* Event Listeners برای دکمه کاهش */
-protDown.addEventListener('mousedown', function(e) {
-  e.preventDefault();
-  isMouseDown = true;
-  clickHandled = false;
-  startDecrement();
-});
-
-protDown.addEventListener('mouseup', function(e) {
-  e.preventDefault();
-  isMouseDown = false;
-  if (!clickHandled) {
-    // اگر فقط کلیک کرده و نگه نداشته
-    playSound(assets.click, 0.15);
-    decrementProtector();
-  }
-  stopIncrement();
-});
-
-protDown.addEventListener('mouseleave', function() {
-  if (isMouseDown) {
-    stopIncrement();
-    isMouseDown = false;
-  }
-});
-
-/* Touch Events برای موبایل */
-protUp.addEventListener('touchstart', function(e) {
-  e.preventDefault();
-  startIncrement();
-}, { passive: false });
-
-protUp.addEventListener('touchend', function(e) {
-  e.preventDefault();
-  stopIncrement();
-}, { passive: false });
-
-protDown.addEventListener('touchstart', function(e) {
-  e.preventDefault();
-  startDecrement();
-}, { passive: false });
-
-protDown.addEventListener('touchend', function(e) {
-  e.preventDefault();
-  stopIncrement();
-}, { passive: false });
-
-/* شروع افزایش با نگه داشتن */
-function startIncrement() {
-  clickHandled = true;
-  playSound(assets.click, 0.2);
-  incrementProtector();
-  // تاخیر قبل از شروع افزایش سریع
-  setTimeout(() => {
-    if (isMouseDown) {
-      protUpInterval = setInterval(incrementProtector, 50);
-    }
-  }, 300);
-}
-
-/* شروع کاهش با نگه داشتن */
-function startDecrement() {
-  clickHandled = true;
-  playSound(assets.click, 0.2);
-  decrementProtector();
-  // تاخیر قبل از شروع کاهش سریع
-  setTimeout(() => {
-    if (isMouseDown) {
-      protDownInterval = setInterval(decrementProtector, 50);
-    }
-  }, 300);
-}
-
-/* توقف اینتروال */
-function stopIncrement() {
-  clearInterval(protUpInterval);
-  clearInterval(protDownInterval);
-}
-
-/* افزایش مقدار محافظ */
-function incrementProtector() {
+  e.stopPropagation();
   state.protectorValue++;
   if(state.protectorValue > 500) state.protectorValue = 1;
-  updateProtectorModalDisplay();
-}
-
-/* کاهش مقدار محافظ */
-function decrementProtector() {
-  state.protectorValue = Math.max(1, state.protectorValue - 1);
-  updateProtectorModalDisplay();
-}
-
-/* آپدیت نمایش مقدار در مودال */
-function updateProtectorModalDisplay() {
   protectorValueEl.textContent = 'S' + state.protectorValue;
   protectorValueEl.classList.add('changing');
   setTimeout(() => {
     protectorValueEl.classList.remove('changing');
   }, 100);
-}
+  playSound(assets.click, 0.2);
+});
 
-/* حذف listenerهای click - چون با mouse تداخل دارن */
-// protUp.removeEventListener('click', incrementProtector);
-// protDown.removeEventListener('click', decrementProtector);
+protDown.addEventListener('click', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  state.protectorValue = Math.max(1, state.protectorValue - 1);
+  protectorValueEl.textContent = 'S' + state.protectorValue;
+  protectorValueEl.classList.add('changing');
+  setTimeout(() => {
+    protectorValueEl.classList.remove('changing');
+  }, 100);
+  playSound(assets.click, 0.2);
+});
 
-/* SET behavior - تنظیم روی 1 ثانیه */
+/* SET behavior */
 protSet.addEventListener('click', () => {
   playSound(assets.click, 0.3);
   if(state.protectorValue === 1 && state.stage === 2 && state.signals.LED4 === 'on') {
@@ -1547,53 +1436,17 @@ protSet.addEventListener('click', () => {
 /* close modal */
 protClose.addEventListener('click', closeProtectorModal);
 modalBackdrop.addEventListener('click', closeProtectorModal);
-mapBackdrop && mapBackdrop.addEventListener('click', () => mapModal.classList.remove('open'));
 
 /* protectorArea click */
 protectorArea.addEventListener('click', () => {
   openProtectorModal();
 });
 
-/* جلوگیری از drag روی دکمه‌ها */
-protUp.addEventListener('dragstart', function(e) {
+/* برای موبایل */
+protectorArea.addEventListener('touchend', function(e) {
   e.preventDefault();
-});
-
-protDown.addEventListener('dragstart', function(e) {
-  e.preventDefault();
-});
-
-/* CSS برای بازخورد بصری بهتر */
-// این رو به استایل‌ها اضافه کن
-protUp.addEventListener('mousedown', function() {
-  this.style.transform = 'scale(0.95)';
-  this.style.backgroundColor = '#1e40af';
-});
-
-protUp.addEventListener('mouseup', function() {
-  this.style.transform = '';
-  this.style.backgroundColor = '';
-});
-
-protUp.addEventListener('mouseleave', function() {
-  this.style.transform = '';
-  this.style.backgroundColor = '';
-});
-
-protDown.addEventListener('mousedown', function() {
-  this.style.transform = 'scale(0.95)';
-  this.style.backgroundColor = '#1e40af';
-});
-
-protDown.addEventListener('mouseup', function() {
-  this.style.transform = '';
-  this.style.backgroundColor = '';
-});
-
-protDown.addEventListener('mouseleave', function() {
-  this.style.transform = '';
-  this.style.backgroundColor = '';
-});
+  openProtectorModal();
+}, { passive: false });
 
     /* map click toggle */
     mapSmall.addEventListener('click', () => {
